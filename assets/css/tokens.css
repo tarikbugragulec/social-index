@@ -1,0 +1,30 @@
+/* ==========================================================================
+   SOCIAL INDEX — Design Tokens (Minimal Editorial Directory)
+   ========================================================================== */
+
+:root {
+  --bg-canvas: #F7F7F4;           /* Off-white editorial paper */
+  --bg-surface: #FFFFFF;          /* Pure white card surface */
+  --bg-subtle: #EFEEE9;           /* Subtle warm stone */
+
+  --text-primary: #202321;        /* Deep charcoal ink */
+  --text-secondary: #585D59;      /* Secondary body ink */
+  --text-muted: #878C88;          /* Muted labels & metadata */
+
+  --accent-primary: #72836A;      /* Olive green accent */
+  --accent-hover: #5D6C56;
+  --accent-subtle: #EBF0E8;
+
+  --border-subtle: #E2E2DC;       /* Hairline grey border */
+  --border-strong: #C9CAC2;
+
+  --font-sans: 'Inter', 'Manrope', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+
+  --shadow-subtle: 0 1px 2px rgba(32, 35, 33, 0.03);
+  --transition: 140ms ease;
+}
