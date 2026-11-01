@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOCIAL INDEX — Social Account & Posts Lookup</title>
+
+  <!-- Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="assets/css/tokens.css" />
+  <link rel="stylesheet" href="assets/css/base.css" />
+  <link rel="stylesheet" href="assets/css/layout.css" />
+
+  <!-- App Logic -->
+  <script src="assets/js/app.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Minimal Header -->
+    <header class="site-header">
+      <div class="brand-group">
+        <span class="brand-name">SOCIAL INDEX</span>
+        <span class="brand-tagline">Hesaplara tıklayarak son gönderileri, hikayeleri, videoları ve istatistikleri görüntüleyin.</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <button type="button" id="openApiConfigBtn" class="btn-secondary-pill" title="Meta (developers.facebook.com) ve diğer platformların resmi API anahtarlarını yapılandırın">
+          ⚙️ Resmi API Ayarları
+        </button>
+        <span class="mono" style="font-size: 0.78rem; color: var(--text-muted);">Account &amp; Post Explorer</span>
+      </div>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <form class="search-bar" id="lookupForm">
+        <div class="search-input-wrap">
+          <span class="at-symbol">@</span>
+          <input
+            type="text"
+            id="usernameInput"
+            class="search-input"
+            placeholder="Kullanıcı adı girin..."
+            autocomplete="off"
+            required
+          />
+        </div>
+        <button type="submit" id="submitBtn" class="btn-primary">Hesapları Getir</button>
+      </form>
+
+      <div class="recent-row">
+        <span class="recent-label">Son Aramalar:</span>
+        <div id="recentChips" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+      </div>
+    </section>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+      <span id="statusText">Bir kullanıcı adı aratın ve gönderilerini görmek için karta tıklayın.</span>
+    </div>
+
+    <!-- Accounts Grid (Instagram, Threads, X, TikTok, YouTube, GitHub, Bluesky) -->
+    <main class="accounts-grid" id="accountsGrid"></main>
+  </div>
+
+  <!-- Account & Posts Detail Modal -->
+  <div class="modal-backdrop" id="accountModal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header" id="modalHeader"></div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+
+  <!-- Official Developer APIs Configuration Modal (Meta / YouTube / X / TikTok / GitHub / Bluesky) -->
+  <div class="modal-backdrop" id="apiConfigModal" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="apiModalTitle" style="max-width: 780px;">
+      <div class="modal-header">
+        <div class="modal-identity">
+          <div>
+            <span class="platform-badge">DEVELOPER API GATEWAY</span>
+            <h2 id="apiModalTitle" class="modal-title" style="margin-top: 4px;">Resmi Platform API Yapılandırması</h2>
+            <div class="account-handle">Meta (developers.facebook.com), YouTube Data API v3, X API v2, TikTok v2, GitHub &amp; Bluesky ATProto</div>
+          </div>
+        </div>
+        <div class="modal-header-actions">
+          <button type="button" class="modal-close-btn" id="closeApiConfigBtn" aria-label="Kapat">✕</button>
+        </div>
+      </div>
+      <div class="modal-body">
+        <form id="apiConfigForm" class="api-config-form">
+          <div class="api-provider-card">
+            <div class="api-provider-header">
+              <div>
+                <strong>1. Meta for Developers — Instagram Graph API &amp; Threads API</strong>
+                <span class="api-endpoint-tag">graph.facebook.com/v22.0 &amp; graph.threads.net/v1.0</span>
+              </div>
+              <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" class="external-link">Token Al (Graph Explorer) ↗</a>
+            </div>
+            <p class="api-provider-desc">
+              <code>business_discovery.username(hedef)</code> uç noktası üzerinden herhangi bir herkese açık Instagram Business/Creator hesabının gönderilerini, Reels videolarını, yorum/beğeni sayılarını ve <code>graph.threads.net/v1.0/profile_lookup</code> ile Threads profillerini resmi olarak çeker.
+            </p>
+            <div class="api-fields-grid">
+              <label>
+                <span>Meta / Instagram Graph Access Token</span>
+                <input type="password" name="metaAccessToken" id="cfg_metaAccessToken" placeholder="EAABwzLixnjYBO..." autocomplete="off" />
+              </label>
+              <label>
+                <span>Instagram Business User ID (business_discovery için)</span>
+                <input type="text" name="igBusinessUserId" id="cfg_igBusinessUserId" placeholder="17841400000000000" autocomplete="off" />
+              </label>
+              <label>
+                <span>Threads Graph Access Token (Opsiyonel, boşsa Meta Token kullanılır)</span>
+                <input type="password" name="threadsAccessToken" id="cfg_threadsAccessToken" placeholder="THQWV..." autocomplete="off" />
+              </label>
+              <label>
+                <span>Meta App ID | App Secret (Instagram oEmbed için opsiyonel)</span>
+                <input type="text" name="metaAppToken" id="cfg_metaAppToken" placeholder="APP_ID|APP_SECRET" autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="api-provider-card">
+            <div class="api-provider-header">
+              <div>
+                <strong>2. Google Cloud — YouTube Data API v3</strong>
+                <span class="api-endpoint-tag">googleapis.com/youtube/v3/channels &amp; playlistItems</span>
+              </div>
+              <a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener noreferrer" class="external-link">API Key Al ↗</a>
+            </div>
+            <p class="api-provider-desc">
+              <code>channels?forHandle=@kullanici</code> ve <code>playlistItems</code> resmi uç noktalarıyla kanal istatistiklerini, tüm yüklenen videoları ve Shorts içeriklerini çeker.
+            </p>
+            <div class="api-fields-grid single-col">
+              <label>
+                <span>YouTube Data API v3 Key</span>
+                <input type="password" name="youtubeApiKey" id="cfg_youtubeApiKey" placeholder="AIzaSy..." autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="api-provider-card">
+            <div class="api-provider-header">
+              <div>
+                <strong>3. X (Twitter) Developer Portal — Official API v2</strong>
+                <span class="api-endpoint-tag">api.x.com/2/users/by/username/:username/tweets</span>
+              </div>
+              <a href="https://developer.x.com/en/portal/dashboard" target="_blank" rel="noopener noreferrer" class="external-link">Bearer Token Al ↗</a>
+            </div>
+            <p class="api-provider-desc">
+              Resmi X API v2 <code>users/by/username</code> ve <code>users/:id/tweets</code> uç noktalarıyla son tweetleri, fotoğraf/video eklerini (<code>expansions=attachments.media_keys</code>) ve etkileşim metriklerini getirir.
+            </p>
+            <div class="api-fields-grid single-col">
+              <label>
+                <span>X API v2 Bearer Token</span>
+                <input type="password" name="xBearerToken" id="cfg_xBearerToken" placeholder="AAAAAAAAAAAAAAAAAAAA..." autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="api-provider-card">
+            <div class="api-provider-header">
+              <div>
+                <strong>4. TikTok for Developers — Research &amp; Display API v2</strong>
+                <span class="api-endpoint-tag">open.tiktokapis.com/v2/research/user/info &amp; video/query</span>
+              </div>
+              <a href="https://developers.tiktok.com/" target="_blank" rel="noopener noreferrer" class="external-link">TikTok Developers ↗</a>
+            </div>
+            <p class="api-provider-desc">
+              TikTok Resmi v2 API (`open.tiktokapis.com/v2`) üzerinden kullanıcı profil bilgilerini ve videolarını sorgular (Anahtar girilmezse otomatik olarak genel TikWM/SSR katmanı çalışır).
+            </p>
+            <div class="api-fields-grid single-col">
+              <label>
+                <span>TikTok Research / Display Access Token</span>
+                <input type="password" name="tiktokAccessToken" id="cfg_tiktokAccessToken" placeholder="clt.example..." autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="api-provider-card">
+            <div class="api-provider-header">
+              <div>
+                <strong>5. GitHub REST API &amp; Bluesky ATProto</strong>
+                <span class="api-endpoint-tag">api.github.com &amp; public.api.bsky.app/xrpc</span>
+              </div>
+              <a href="https://github.com/settings/tokens" target="_blank" rel="noopener noreferrer" class="external-link">GitHub Token ↗</a>
+            </div>
+            <p class="api-provider-desc">
+              Bluesky ATProto (<code>public.api.bsky.app</code>) ve GitHub REST API anahtarsız da doğrudan çalışır; ancak GitHub saatlik 60 istek limitini 5.000'e çıkarmak için Personal Access Token ekleyebilirsiniz.
+            </p>
+            <div class="api-fields-grid single-col">
+              <label>
+                <span>GitHub Personal Access Token (Opsiyonel)</span>
+                <input type="password" name="githubToken" id="cfg_githubToken" placeholder="ghp_... veya github_pat_..." autocomplete="off" />
+              </label>
+            </div>
+          </div>
+
+          <div class="api-config-footer">
+            <span id="apiConfigStatus" class="mono" style="font-size: 0.78rem; color: var(--text-secondary);">
+              Not: Anahtar girilmeyen platformlarda AnonyIG/StoriesIG MCP ve açık web katmanları otomatik devreye girer.
+            </span>
+            <button type="submit" class="btn-primary">Ayarları Kaydet ve Uygula</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
